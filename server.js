@@ -65,7 +65,7 @@ mqttClient.on('message', async (topic, message) => {
                 // 1. Veritabanı işlemi: Cihazı çalıştır.
 
                 const updatedDevice = await Device.findOneAndUpdate(
-                    { deviceId: receivedMessage.deviceId },
+                    { deviceId: receivedMessage.deviceId,isDeleted:false },
                     { isActive: receivedMessage.isActive },
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
@@ -110,7 +110,7 @@ mqttClient.on('message', async (topic, message) => {
                 // 1. Veritabanı işlemi: Cihazı çalıştır.
 
                 const updatedDevice = await Device.findOneAndUpdate(
-                    { deviceId: receivedMessage.deviceId },
+                    { deviceId: receivedMessage.deviceId,isDeleted:false },
                     { isActive: receivedMessage.isActive },
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
@@ -330,7 +330,7 @@ mqttClient.on('message', async (topic, message) => {
     const parts = path.split("/");
     const result = parts[1];  // "XXXXX"
     const deneme = "intdens/"+result+"/response";
-    console.log("intdens/"+result+"/response");
+    // console.log("intdens/"+result+"/response");
 
 
     // console.log(JSON.parse(message.toString()));

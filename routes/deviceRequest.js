@@ -39,7 +39,8 @@ router.post("/add",async (req,res)=>{
 
         // Cihaz başarıyla eklendikten sonra MQTT mesajı gönder
         const mqttMessage = JSON.stringify({ gatewayId:gatewayId,deviceId:deviceIdParam, status: "added" });
-        mqttClient.publish('a1/device/add', mqttMessage, (err) => {
+        // mqttClient.publish('a1/device/add', mqttMessage, (err) => {
+        mqttClient.publish('intdens/'+gatewayId+'/device_add', mqttMessage, (err) => {
             if (err) {
                 console.error("MQTT mesajı gönderilemedi:", err);
             } else {
@@ -56,7 +57,7 @@ router.post("/add",async (req,res)=>{
 router.post("/delete", async (req, res) => {
     try {
 
-        const { deviceId} = req.body;
+        const { deviceId,gatewayId} = req.body;
         // console.log(deviceId);
         
         // const devices = await Device.find({ deviceId: deviceId, isDeleted: false });
@@ -70,9 +71,23 @@ router.post("/delete", async (req, res) => {
             { new: true } // Güncellenmiş dökümantasyonu geri döner
         );
 
+        console.log(deletedDevice);
+        
+
         if (!deletedDevice) {
             return res.status(404).json("Cihaz bulunamadı");
         }
+
+         // Cihaz başarıyla eklendikten sonra MQTT mesajı gönder
+        const mqttMessage = JSON.stringify({ gatewayId:gatewayId,deviceId:deviceId, status: "deleted" });
+        // mqttClient.publish('a1/device/add', mqttMessage, (err) => {
+        mqttClient.publish('intdens/'+gatewayId+'/device_delete', mqttMessage, (err) => {
+            if (err) {
+                console.error("MQTT mesajı gönderilemedi:", err);
+            } else {
+                console.log("MQTT mesajı başarıyla gönderildi:", mqttMessage);
+            }
+        });
          
         return res.status(200).json("Cihaz Silindi !");
 
@@ -85,12 +100,16 @@ router.get("/:gatewayId",async (req, res) => {
     try {
 
         const gatewayId = req.params.gatewayId;
+        // console.log(gatewayId);
+        
 
         // Cihazları çekiyoruz ve sadece belirli alanları seçiyoruz
         const devices = await Device.find(
             { gatewayId: gatewayId, isDeleted: false }
         ).select('deviceName deviceId isActive isPairDevice deviceType isOnline maxTemperature minTemperature minHumidity maxHumidity sensorTimestamp batteryPercentage batteryVoltage humidity temperature isAlarm -_id');
 
+        console.log(devices);
+        
         // Cihaz tipine göre yanıtı filtreliyoruz
         const filteredDevices = devices.map(device => {
             const deviceObj = device.toObject();
@@ -124,6 +143,8 @@ router.get("/:gatewayId",async (req, res) => {
         res.status(400).json(error);
     }
 });
+
+
 
 router.get("/getbydeviceid/:deviceid", async (req, res) => {
     try {
