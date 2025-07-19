@@ -12,7 +12,6 @@ const sendEmail = require("../Util/email.js");
 router.post("/register", async (req, res) => {
     try {
       const { username, email, password } = req.body;
-      
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
@@ -138,6 +137,9 @@ router.post("/login",async(req,res)=>{
     }
 })
 
+
+
+//AŞAĞIDAKİLER TEST EDİLMEDİ
 
 //! change password
 router.post("/change-password", async (req, res) => {
