@@ -10,7 +10,7 @@ const DeviceSchema = mongoose.Schema(
         deviceName:{type:String,require:true},
         isActive:{type:Boolean,default:false},
         isDeleted:{type:Boolean,default:false},
-        isPairDevice:{type:Boolean,default:true},
+        // isPairDevice:{type:Boolean,default:true},
         isOnline:{type:Boolean,default:false},
         minTemperature: { type: Number, default: 0 },
         maxTemperature: { type: Number, default: 0 },
