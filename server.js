@@ -39,22 +39,194 @@ mqttClient.on('connect', () => {
             console.error('device online', err);
         }
     });
-    mqttClient.subscribe('intdens/+/command', (err) => {
+    mqttClient.subscribe('intdens/+/cmd_response', (err) => {
         if (err) {
             console.error('intdens online', err);
         }
     });
-    // mqttClient.subscribe('a1/device/temperaturealarm', (err) => {
-    //     if (err) {
-    //         console.error('device online', err);
-    //     }
-    // });
+    mqttClient.subscribe('intdens/+/manuel', (err) => {
+        if (err) {
+            console.error('intdens online', err);
+        }
+    });
+
+    mqttClient.subscribe('intdens/device_online', (err) => {
+        if (err) {
+            console.error('device_online', err);
+        }
+    });
+     mqttClient.subscribe('intdens/gw_online', (err) => {
+        if (err) {
+            console.error('device_online', err);
+        }
+    });
 });
 
 // Veritabanı modelini import et
 const Device = require('./models/Device'); // Örneğin Device modelini kullanıyoruz
 
 mqttClient.on('message', async (topic, message) => {
+   
+     // intdens/+/response
+    const path = topic;
+    const parts = path.split("/");
+    const result = parts[1];  // "XXXXX"
+    // const lastTpic = "intdens/"+result+"/cmd_response_db";
+    // console.log("intdens/"+result+"/response");
+
+    if ( parts[2] === "cmd_response") {
+        
+         const receivedMessage = JSON.parse(message.toString());
+
+                 try {
+                // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                const updatedDevice = await Device.findOneAndUpdate(
+                    { deviceId: receivedMessage.deviceId,isDeleted:false },
+                    { isActive: true },
+                    { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+            // 2. 'a1/device/responsedb' topiğine mesaj gönder
+            const responseMessage = JSON.stringify({
+                deviceId: receivedMessage.deviceId,
+                deviceType:receivedMessage.deviceType ,
+                command:true
+            });
+
+            mqttClient.publish("intdens/"+result+"/cmd_response_db", responseMessage, (err) => {
+                if (err) {
+                    console.error('Failed to publish message', err);
+                } else {
+                    console.log('Message published to a1/device/responsedb:', receivedMessage);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
+
+
+    }
+
+     if ( parts[2] === "manuel") {
+        
+          const receivedMessage = JSON.parse(message.toString());
+
+                 try {
+                // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                const updatedDevice = await Device.findOneAndUpdate(
+                    { deviceId: receivedMessage.deviceId,isDeleted:false },
+                    { isActive: true },
+                    { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+            // 2. 'a1/device/responsedb' topiğine mesaj gönder
+            const responseMessage = JSON.stringify({
+                deviceId: receivedMessage.deviceId,
+                deviceType:receivedMessage.deviceType ,
+                command:true
+            });
+
+            mqttClient.publish("intdens/"+result+"/manuel_response_db", responseMessage, (err) => {
+                if (err) {
+                    console.error('Failed to publish message', err);
+                } else {
+                    console.log('Message published to a1/device/responsedb:', receivedMessage);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
+    }
+
+    if (topic == "intdens/device_online") {
+    
+        
+        try {
+              const receivedMessage = JSON.parse(message.toString());
+                // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                const updatedDevice = await Device.findOneAndUpdate(
+                    { deviceId: receivedMessage.deviceId,isDeleted:false },
+                    { isOnline: receivedMessage.isOnline },
+                    { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+            // // 2. 'a1/device/responsedb' topiğine mesaj gönder
+            // const responseMessage = JSON.stringify({
+            //     gatewayId:updatedDevice.gatewayId,
+            //     deviceId: receivedMessage.deviceId,
+            //     deviceType:receivedMessage.deviceType ,
+            //     isActive:receivedMessage.isActive,
+            //     mn:0,
+            //     // mn:1,
+            // });
+
+            // mqttClient.publish('a1/device/responsedb', responseMessage, (err) => {
+            //     if (err) {
+            //         console.error('Failed to publish message', err);
+            //     } else {
+            //         console.log('Message published to a1/device/responsedb:', receivedMessage);
+            //     }
+            // });
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
+
+    }
+
+    if (topic== "intdens/gw_online") {
+        
+        try {
+              const receivedMessage = JSON.parse(message.toString());
+                // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                const updatedGateway = await Gateway.findOneAndUpdate(
+                    { gatewayId: receivedMessage.gatewayId,isDeleted:false },
+                    { isOnline: receivedMessage.isOnline },
+                    { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedGateway) {
+                    
+                    return;
+                }
+                
+
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
+
+    }
+
+     if ( parts[2] === "sensor") {
+        
+        
+    }
+   
     if (topic === 'a1/device/response') {
         // console.log('Received message from a1/device/response:', message.toString());
 
@@ -324,24 +496,24 @@ mqttClient.on('message', async (topic, message) => {
                }
             
     }
+
+
+
     
-    // intdens/+/response
-    const path = topic;
-    const parts = path.split("/");
-    const result = parts[1];  // "XXXXX"
-    const deneme = "intdens/"+result+"/response";
-    // console.log("intdens/"+result+"/response");
+   
+
+
 
 
     // console.log(JSON.parse(message.toString()));
 
-    mqttClient.publish(deneme, 'selam', (err) => {
-        if (err) {
-            console.error('Failed to publish message', err);
-        } else {
-            console.log('Message published to a1/device/responsedb:');
-        }
-    });
+    // mqttClient.publish(topic, JSON.parse(message.toString()), (err) => {
+    //     if (err) {
+    //         console.error('Failed to publish message', err);
+    //     } else {
+    //         console.log('Message published to a1/device/responsedb:');
+    //     }
+    // });
     
 
 });
