@@ -97,7 +97,7 @@ mqttClient.on('message', async (topic, message) => {
             const responseMessage = JSON.stringify({
                 deviceId: receivedMessage.deviceId,
                 deviceType:receivedMessage.deviceType ,
-                command:true
+                command:receivedMessage.command
             });
 
             mqttClient.publish("intdens/"+result+"/cmd_response_db", responseMessage, (err) => {
@@ -222,10 +222,15 @@ mqttClient.on('message', async (topic, message) => {
 
     }
 
-     if ( parts[2] === "sensor") {
+    if (parts[2] === "sensor") {
         
         
     }
+
+    // if (topic== "intdens/sensor_online")
+    // {
+
+    // }
    
     if (topic === 'a1/device/response') {
         // console.log('Received message from a1/device/response:', message.toString());
