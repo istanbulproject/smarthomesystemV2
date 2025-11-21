@@ -49,7 +49,6 @@ mqttClient.on('connect', () => {
             console.error('intdens online', err);
         }
     });
-
     mqttClient.subscribe('intdens/device_online', (err) => {
         if (err) {
             console.error('device_online', err);
@@ -58,6 +57,11 @@ mqttClient.on('connect', () => {
      mqttClient.subscribe('intdens/gw_online', (err) => {
         if (err) {
             console.error('device_online', err);
+        }
+    });
+    mqttClient.subscribe('intdens/+/gas', (err) => {
+        if (err) {
+            console.error('intdens online', err);
         }
     });
 });
@@ -77,13 +81,15 @@ mqttClient.on('message', async (topic, message) => {
     if ( parts[2] === "cmd_response") {
         
          const receivedMessage = JSON.parse(message.toString());
+         const outputNumber = `output${receivedMessage.outputIndex}`;
+         
 
                  try {
                 // 1. Veritabanı işlemi: Cihazı çalıştır.
 
                 const updatedDevice = await Device.findOneAndUpdate(
                     { deviceId: receivedMessage.deviceId,isDeleted:false },
-                    { isActive: true },
+                    { [outputNumber]:true,isActive: true,isActiveTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
 
@@ -222,7 +228,7 @@ mqttClient.on('message', async (topic, message) => {
 
     }
 
-    if (parts[2] === "sensor") {
+    if (parts[2] === "gas") {
         
         
     }

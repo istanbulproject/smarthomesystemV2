@@ -14,11 +14,12 @@ router.post("/add",async (req,res)=>{
         // const userId = req.params.userId;
         // const device = await Device.find({userId:userId,deviceNo:deviceNo,active: true, deleted: false});
 
-        const { deviceId,gatewayId } = req.body; // req.body'den userId ve deviceNo alınır
+        const { deviceId,gatewayId,deviceName,userId } = req.body; // req.body'den userId ve deviceNo alınır
 
         const deviceIdParam=deviceId.substring(0, 16);
-        const serialNumberParam=deviceId.substring(16,29);
-        const deviceTypeParam = deviceId.slice(-1);
+        const revNoParam=deviceId.substring(16,19);
+        const deviceTypeParam = deviceId.slice(19,22);
+        const outputParam=deviceId.slice(22,24);
 
         const device = await Device.findOne({deviceId: deviceIdParam, isDeleted: false });
 
@@ -28,13 +29,96 @@ router.post("/add",async (req,res)=>{
         }
 
         const newDevice=new Device(req.body);
-        newDevice.deviceId=deviceIdParam;
-        newDevice.serialNumber=serialNumberParam;
+
+        newDevice.gatewayId=gatewayId;
+        newDevice.userId=userId;
+        newDevice.deviceName=deviceName
+
+        newDevice.deviceId=deviceIdParam;    
+        newDevice.revNo=revNoParam;
         newDevice.deviceType=deviceTypeParam;
-        // newDevice.deviceType=newDevice.deviceId.slice(-1);
+        newDevice.output=outputParam;        
+        
+
+        if (parseInt(outputParam) == 1) {
+             newDevice.set("output1", false);
+        }
+        else if (parseInt(outputParam) == 2) {
+             newDevice.set("output1", false);
+             newDevice.set("output2", false);
+        }
+        else if (parseInt(outputParam) == 3) {
+             newDevice.set("output1", false);
+             newDevice.set("output2", false);
+             newDevice.set("output3", false);
+        }
+
+
+        if (parseInt(deviceTypeParam) == 1 ) {
+            newDevice.set("isActive", false);
+            // newDevice.set("isActiveTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("isActiveTime", null);
+        }
+        else if (parseInt(deviceTypeParam) == 2 ) {
+            newDevice.set("isActive", false);
+            // newDevice.set("isActiveTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("isActiveTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 3 ) {
+            // newDevice.set("lastSensörTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("lastSensörTime",null);
+            newDevice.set("temperature",0);
+            newDevice.set("temperatureData", []);
+            newDevice.set("humidity",0);
+            newDevice.set("batteryPercentage",0);
+            newDevice.set("interval",0);
+            newDevice.set("isAlarm",false);
+        }
+         else if (parseInt(deviceTypeParam) == 4 ) {
+            newDevice.set("isActive", false);
+            // newDevice.set("isActiveTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("isActiveTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 5 ) {
+            newDevice.set("isActive", false);
+            // newDevice.set("isActiveTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("isActiveTime", null);
+            newDevice.set("min", 0);
+            newDevice.set("max", 0);
+            newDevice.set("threshold", 0);
+        }
+         else if (parseInt(deviceTypeParam) == 6 ) {
+            // newDevice.set("lastTriggerTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("lastTriggerTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 7 ) {
+            newDevice.set("IsWaterLeak", false);
+            // newDevice.set("IsWaterLeakTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsWaterLeakTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 8 ) {
+            newDevice.set("IsGasLeak", false);
+            // newDevice.set("IsGasLeakTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsGasLeakTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 9 ) {
+            newDevice.set("IsOpenClose", false);
+            // newDevice.set("IsOpenCloseTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsOpenCloseTime", null);
+            newDevice.set("IsGasLeak", false);
+            // newDevice.set("IsGasLeakTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsGasLeakTime", null);
+        }
+         else if (parseInt(deviceTypeParam) == 10 ) {
+            newDevice.set("IsOpenClose", false);
+            // newDevice.set("IsOpenCloseTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsOpenCloseTime", null);
+            newDevice.set("IsWaterLeak", false);
+            // newDevice.set("IsWaterTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("IsWaterTime", null);
+        }
          
          await newDevice.save();
-        // console.log(newDevice);
         
 
         // Cihaz başarıyla eklendikten sonra MQTT mesajı gönder
@@ -108,7 +192,7 @@ router.get("/:gatewayId",async (req, res) => {
             { gatewayId: gatewayId, isDeleted: false }
         ).select('deviceName deviceId isActive isPairDevice deviceType isOnline maxTemperature minTemperature minHumidity maxHumidity sensorTimestamp batteryPercentage batteryVoltage humidity temperature isAlarm -_id');
 
-        console.log(devices);
+        // console.log(devices);
         
         // Cihaz tipine göre yanıtı filtreliyoruz
         const filteredDevices = devices.map(device => {
