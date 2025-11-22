@@ -5,6 +5,7 @@ const verifyToken = require('../Util/authMiddleware.js');
 const Gateway = require("../models/Gateway.js");
 const UserGateway=require("../models/UserGateway.js");
 const Device = require("../models/Device.js");
+const { mqttClient } = require('../server.js'); // MQTT istemcisini import et
 
 
 // //Tekli talep ancak şuan boşta
@@ -52,12 +53,26 @@ router.post("/add", async (req, res) => {
         const newUserGateway = new UserGateway({ userId: userId, gatewayId: addedGatewayId });
         await newUserGateway.save({ session });
 
+
+        // Cihaz başarıyla eklendikten sonra MQTT mesajı gönder
+        const mqttMessage = JSON.stringify({ gatewayId:gatewayId, status: "added" });
+        // mqttClient.publish('a1/device/add', mqttMessage, (err) => {
+        mqttClient.publish('intdens/'+gatewayId+'/gw_add', mqttMessage, (err) => {
+            if (err) {
+                console.error("MQTT mesajı gönderilemedi:", err);
+            } else {
+                console.log("MQTT mesajı başarıyla gönderildi:", mqttMessage);
+            }
+        });
+
         // Transaction'ı commit et
         await session.commitTransaction();
         session.endSession();
 
         res.status(200).json("Gateway ve user_gateway tablosuna kayıt eklendi");
     } catch (error) {
+        console.log(error);
+        
         // Hata durumunda transaction'ı geri al
         await session.abortTransaction();
         session.endSession();

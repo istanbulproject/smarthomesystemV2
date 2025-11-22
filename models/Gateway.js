@@ -4,7 +4,7 @@ const GatewaySchema = mongoose.Schema(
     {
         gatewayId:{type:String,require:true},
         gatewayName:{type:String,require:true},
-        // isActive:{type:Boolean,default:true},
+        userId:{type:String,require:true},
         isDeleted:{type:Boolean,default:false},
         isOnline:{type:Boolean,default:false}
     },
