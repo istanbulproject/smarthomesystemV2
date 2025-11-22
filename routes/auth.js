@@ -103,7 +103,7 @@ router.get("/verify/:token", async (req, res) => {
 //login
 router.post("/login",async(req,res)=>{
     try {
-
+      
 
         const user = await User.findOne({ email: req.body.email,isDeleted:false });
 

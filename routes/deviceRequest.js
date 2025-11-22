@@ -10,6 +10,8 @@ const { mqttClient } = require('../server.js'); // MQTT istemcisini import et
 router.post("/add",async (req,res)=>{
     try {
 
+        console.log(req.body);
+        
         // const deviceNo = req.params.deviceNo;
         // const userId = req.params.userId;
         // const device = await Device.find({userId:userId,deviceNo:deviceNo,active: true, deleted: false});

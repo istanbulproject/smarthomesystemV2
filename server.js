@@ -233,10 +233,10 @@ mqttClient.on('message', async (topic, message) => {
         
     }
 
-    // if (topic== "intdens/sensor_online")
-    // {
+    if (topic== "intdens/sensor_online")
+    {
 
-    // }
+    }
    
     if (topic === 'a1/device/response') {
         // console.log('Received message from a1/device/response:', message.toString());
