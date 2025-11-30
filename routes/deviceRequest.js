@@ -10,12 +10,6 @@ const { mqttClient } = require('../server.js'); // MQTT istemcisini import et
 router.post("/add",async (req,res)=>{
     try {
 
-        console.log(req.body);
-        
-        // const deviceNo = req.params.deviceNo;
-        // const userId = req.params.userId;
-        // const device = await Device.find({userId:userId,deviceNo:deviceNo,active: true, deleted: false});
-
         const { deviceId,gatewayId,deviceName,userId } = req.body; // req.body'den userId ve deviceNo alınır
 
         const deviceIdParam=deviceId.substring(0, 16);
@@ -37,7 +31,7 @@ router.post("/add",async (req,res)=>{
         newDevice.deviceName=deviceName
 
         newDevice.deviceId=deviceIdParam;    
-        newDevice.revNo=revNoParam;
+        newDevice.revNo=String(revNoParam).split('').join('.');
         newDevice.deviceType=deviceTypeParam;
         newDevice.output=outputParam;        
         
@@ -68,7 +62,7 @@ router.post("/add",async (req,res)=>{
         }
          else if (parseInt(deviceTypeParam) == 3 ) {
             // newDevice.set("lastSensörTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
-            newDevice.set("lastSensörTime",null);
+            newDevice.set("lastSensorTime",null);
             newDevice.set("temperature",0);
             newDevice.set("temperatureData", []);
             newDevice.set("humidity",0);
@@ -196,39 +190,18 @@ router.get("/:gatewayId",async (req, res) => {
 
         // console.log(devices);
         
-        // Cihaz tipine göre yanıtı filtreliyoruz
-        const filteredDevices = devices.map(device => {
-            const deviceObj = device.toObject();
-
-            if (deviceObj.deviceType === 2) {
-                // Sıcaklık sensörleri için max/min sıcaklık alanları bırak
-                delete deviceObj.maxTemperature;
-                delete deviceObj.minTemperature;
-                delete deviceObj.minHumidity;
-                delete deviceObj.maxHumidity;
-                delete deviceObj.sensorTimestamp;
-                delete deviceObj.batteryPercentage;
-                delete deviceObj.batteryVoltage;
-                delete deviceObj.humidity;
-                delete deviceObj.temperature;
-                delete deviceObj.isAlarm;
 
 
-                return deviceObj;
-
-            } else if (deviceObj.deviceType === 1 || deviceObj.deviceType === 3) {
-                return deviceObj;
-            }
-            
-        });
-
-        res.status(200).json(filteredDevices.length > 0 ? filteredDevices : filteredDevices.length);
+        res.status(200).json(devices);
 
 
     } catch (error) {
         res.status(400).json(error);
     }
 });
+
+
+
 
 
 
