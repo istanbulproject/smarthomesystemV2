@@ -9,7 +9,7 @@ const DeviceSchema = mongoose.Schema(
         isDeleted:{type:Boolean,default:false},
         isOnline:{type:Boolean,default:false},
         deviceType:{type:Number,require:true},
-        revNo:{type:Number,require:true},
+        revNo:{type:String,require:true},
         output:{type:Number,require:true},
 
         // serialNumber:{type:String,require:true},

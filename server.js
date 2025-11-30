@@ -121,16 +121,17 @@ mqttClient.on('message', async (topic, message) => {
 
     }
 
-     if ( parts[2] === "manuel") {
+    if ( parts[2] === "manuel") {
         
           const receivedMessage = JSON.parse(message.toString());
+          const outputNumber = `output${receivedMessage.outputIndex}`;
 
                  try {
                 // 1. Veritabanı işlemi: Cihazı çalıştır.
 
                 const updatedDevice = await Device.findOneAndUpdate(
                     { deviceId: receivedMessage.deviceId,isDeleted:false },
-                    { isActive: true },
+                    {  [outputNumber]:true,isActive: true },
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
 
