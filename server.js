@@ -59,7 +59,7 @@ mqttClient.on('connect', () => {
             console.error('device_online', err);
         }
     });
-    mqttClient.subscribe('intdens/+/gas', (err) => {
+    mqttClient.subscribe('intdens/+/door_sensor', (err) => {
         if (err) {
             console.error('intdens online', err);
         }
@@ -229,15 +229,86 @@ mqttClient.on('message', async (topic, message) => {
 
     }
 
-    if (parts[2] === "gas") {
+    if (parts[2] === "door_sensor") {
         
+         const receivedMessage = JSON.parse(message.toString());
+         
+
+         try {
+                    // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                    const updatedDevice = await Device.findOneAndUpdate(
+                        { deviceId: receivedMessage.deviceId,isDeleted:false },
+                        { lastTrigger:receivedMessage.doorStatus,lastTriggerTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
+                        { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
+    }
+
+    if (parts[2] === "leak_sensor") {
+        
+         const receivedMessage = JSON.parse(message.toString());
+         
+
+         try {
+                    // 1. Veritabanı işlemi: Cihazı çalıştır.
+
+                    const updatedDevice = await Device.findOneAndUpdate(
+                        { deviceId: receivedMessage.deviceId,isDeleted:false },
+                        { IsGasLeak:receivedMessage.leakStatus,IsGasLeakTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
+                        { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
         
     }
 
-    if (topic== "intdens/sensor_online")
-    {
+     if (parts[2] === "gas_sensor") {
+        
+          try {
+                    // 1. Veritabanı işlemi: Cihazı çalıştır.
 
+                    const updatedDevice = await Device.findOneAndUpdate(
+                        { deviceId: receivedMessage.deviceId,isDeleted:false },
+                        { IsGasLeak:receivedMessage.gasStatus,IsGasLeakTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
+                        { new: true } // Güncellenmiş dökümantasyonu geri döner
+                );
+
+                if (!updatedDevice) {
+                    
+                    // console.log("Cihaz bulunamadı");
+                    return;
+                }
+                
+
+        } catch (error) {
+            console.error('Error while saving device or publishing message:', error);
+        }
     }
+
+    // if (topic== "intdens/sensor_online")
+    // {
+
+    // }
    
     if (topic === 'a1/device/response') {
         // console.log('Received message from a1/device/response:', message.toString());

@@ -84,7 +84,7 @@ router.post("/add",async (req,res)=>{
             newDevice.set("threshold", 0);
         }
          else if (parseInt(deviceTypeParam) == 6 ) {
-            // newDevice.set("lastTriggerTime", new Date(new Date().getTime() + 3 * 60 * 60 * 1000));
+            newDevice.set("lastTrigger", false);
             newDevice.set("lastTriggerTime", null);
         }
          else if (parseInt(deviceTypeParam) == 7 ) {
