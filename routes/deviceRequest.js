@@ -186,7 +186,7 @@ router.get("/:gatewayId",async (req, res) => {
         // Cihazları çekiyoruz ve sadece belirli alanları seçiyoruz
         const devices = await Device.find(
             { gatewayId: gatewayId, isDeleted: false }
-        ).select('deviceName deviceId isActive isPairDevice deviceType isOnline maxTemperature minTemperature minHumidity maxHumidity sensorTimestamp batteryPercentage batteryVoltage humidity temperature isAlarm -_id');
+        );
 
         // console.log(devices);
         
