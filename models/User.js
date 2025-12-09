@@ -9,6 +9,7 @@ const UserSchema = mongoose.Schema(
         isDeleted:{type:Boolean,default:false},
         isVerified:{type:Boolean,default:false},
         verificationToken: { type: String }, // Doğrulama token'ı
+        fcmToken: { type: String }, // Firebase Cloud Messaging token
     },
     {timestamps:true}
 )
