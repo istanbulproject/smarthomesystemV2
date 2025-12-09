@@ -89,7 +89,7 @@ mqttClient.on('message', async (topic, message) => {
 
                 const updatedDevice = await Device.findOneAndUpdate(
                     { deviceId: receivedMessage.deviceId,isDeleted:false },
-                    { [outputNumber]:true,isActive: true,isActiveTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
+                    { [outputNumber]:receivedMessage.command,isActiveTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
 
