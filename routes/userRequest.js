@@ -26,4 +26,41 @@ router.get("/gateways/:userId", async (req, res) => {
     }
 });
 
+router.post("/update-fcm-token", async (req, res) => {
+    try {
+        console.log("FCM Token Update Request:", req.body);
+        
+        const { userId, fcmToken } = req.body;
+
+        if (!userId || !fcmToken) {
+            console.log("Missing required fields - userId:", userId, "fcmToken:", fcmToken ? "exists" : "missing");
+            return res.status(400).json({ message: "userId ve fcmToken gereklidir" });
+        }
+
+        console.log("Updating FCM token for userId:", userId);
+        
+        // Kullanıcıyı bul ve FCM token'ı güncelle
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { fcmToken: fcmToken },
+            { new: true }
+        ).select('username email fcmToken');
+
+        if (!updatedUser) {
+            console.log("User not found with userId:", userId);
+            return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+        }
+
+        console.log("FCM token successfully updated for user:", updatedUser.username);
+        
+        res.status(200).json({ 
+            message: "FCM token başarıyla güncellendi",
+            user: updatedUser
+        });
+    } catch (error) {
+        console.error("Error updating FCM token:", error);
+        res.status(400).json({ message: "Hata oluştu", error: error.message });
+    }
+});
+
 module.exports = router;
