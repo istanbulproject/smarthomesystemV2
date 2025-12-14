@@ -64,6 +64,16 @@ mqttClient.on('connect', () => {
             console.error('intdens online', err);
         }
     });
+     mqttClient.subscribe('intdens/+/leak_sensor', (err) => {
+        if (err) {
+            console.error('intdens online', err);
+        }
+    });
+     mqttClient.subscribe('intdens/+/gas_sensor', (err) => {
+        if (err) {
+            console.error('intdens online', err);
+        }
+    });
 });
 
 // Veritabanı modelini import et
@@ -269,7 +279,7 @@ mqttClient.on('message', async (topic, message) => {
 
                     const updatedDevice = await Device.findOneAndUpdate(
                         { deviceId: receivedMessage.deviceId,isDeleted:false },
-                        { IsGasLeak:receivedMessage.leakStatus,IsGasLeakTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
+                        { IsWaterLeak:receivedMessage.leakStatus,IsWaterLeakTime: new Date(Date.now() + 3 * 60 * 60 * 1000)},
                         { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
 
