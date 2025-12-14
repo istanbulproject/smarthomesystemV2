@@ -34,9 +34,9 @@ router.post("/add", async (req, res) => {
 
         const { gatewayId } = req.body; // req.body'den userId ve deviceNo alınır
 
-        const Gateway = await Gateway.findOne({ gatewayId: gatewayId, isDeleted: false });
+        const findGateway = await Gateway.findOne({ gatewayId: gatewayId, isDeleted: false });
 
-        if (Gateway) {
+        if (findGateway) {
             res.status(404).json("Gateway daha önce eklenmiş.!");
             return;
         }

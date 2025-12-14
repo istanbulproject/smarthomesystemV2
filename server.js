@@ -71,6 +71,9 @@ const Device = require('./models/Device'); // Örneğin Device modelini kullanı
 
 mqttClient.on('message', async (topic, message) => {
    
+    // console.log(topic.toString());
+    // console.log(message.toString());
+    
      // intdens/+/response
     const path = topic;
     const parts = path.split("/");
@@ -131,7 +134,7 @@ mqttClient.on('message', async (topic, message) => {
 
                 const updatedDevice = await Device.findOneAndUpdate(
                     { deviceId: receivedMessage.deviceId,isDeleted:false },
-                    {  [outputNumber]:true,isActive: true },
+                    {  [outputNumber]:receivedMessage.command,isActive: true },
                     { new: true } // Güncellenmiş dökümantasyonu geri döner
                 );
 
@@ -145,7 +148,7 @@ mqttClient.on('message', async (topic, message) => {
             const responseMessage = JSON.stringify({
                 deviceId: receivedMessage.deviceId,
                 deviceType:receivedMessage.deviceType ,
-                command:true
+                command:receivedMessage.command
             });
 
             mqttClient.publish("intdens/"+result+"/manuel_response_db", responseMessage, (err) => {
