@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const verifyToken = require('../Util/authMiddleware.js');
 const Device = require("../models/Device.js");
+const User = require("../models/User.js");
 const { mqttClient } = require('../server.js'); // MQTT istemcisini import et
 
 
