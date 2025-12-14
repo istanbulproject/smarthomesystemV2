@@ -148,7 +148,8 @@ mqttClient.on('message', async (topic, message) => {
             const responseMessage = JSON.stringify({
                 deviceId: receivedMessage.deviceId,
                 deviceType:receivedMessage.deviceType ,
-                command:receivedMessage.command
+                command:receivedMessage.command,
+                outputIndex: receivedMessage.outputIndex
             });
 
             mqttClient.publish("intdens/"+result+"/manuel_response_db", responseMessage, (err) => {
