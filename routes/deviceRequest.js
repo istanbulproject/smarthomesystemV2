@@ -200,6 +200,54 @@ router.get("/:gatewayId",async (req, res) => {
     }
 });
 
+router.get("/fcm-token/:deviceId", async (req, res) => {
+    try {
+        console.log("FCM Token Request for deviceId:", req.params.deviceId);
+        
+        const deviceId = req.params.deviceId;
+
+        // Cihazı bul
+        const device = await Device.findOne(
+            { deviceId: deviceId, isDeleted: false }
+        ).select('userId deviceId deviceName');
+
+        if (!device) {
+            console.log("Device not found with deviceId:", deviceId);
+            return res.status(404).json({ message: "Cihaz bulunamadı" });
+        }
+
+        console.log("Device found, userId:", device.userId);
+
+        // Kullanıcıyı bul ve FCM token'ını al
+        const user = await User.findById(device.userId).select('fcmToken username email');
+
+        if (!user) {
+            console.log("User not found with userId:", device.userId);
+            return res.status(404).json({ message: "Kullanıcı bulunamadı" });
+        }
+
+        if (!user.fcmToken) {
+            console.log("No FCM token found for user:", user.username);
+            return res.status(404).json({ message: "Kullanıcının FCM token'ı yok" });
+        }
+
+        console.log("FCM token found for user:", user.username);
+
+        res.status(200).json({
+            deviceId: device.deviceId,
+            deviceName: device.deviceName,
+            userId: device.userId,
+            username: user.username,
+            email: user.email,
+            fcmToken: user.fcmToken
+        });
+
+    } catch (error) {
+        console.error("Error fetching FCM token:", error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
 
 
 
