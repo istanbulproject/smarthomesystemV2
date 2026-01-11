@@ -112,18 +112,19 @@ mqttClient.on('message', async (topic, message) => {
                     return;
                 }
                 
-            // 2. 'a1/device/responsedb' topiğine mesaj gönder
+            // 2. 'cmd_response_dbb' topiğine mesaj gönder
             const responseMessage = JSON.stringify({
                 deviceId: receivedMessage.deviceId,
                 deviceType:receivedMessage.deviceType ,
-                command:receivedMessage.command
+                command:receivedMessage.command,
+                outputIndex:receivedMessage.outputIndex
             });
 
             mqttClient.publish("intdens/"+result+"/cmd_response_db", responseMessage, (err) => {
                 if (err) {
                     console.error('Failed to publish message', err);
                 } else {
-                    console.log('Message published to a1/device/responsedb:', receivedMessage);
+                    console.log('Message published to cmd_response_db:', receivedMessage);
                 }
             });
 
