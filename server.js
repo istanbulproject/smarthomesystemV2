@@ -358,7 +358,6 @@ mqttClient.on('message', async (topic, message) => {
               const receivedMessage = JSON.parse(message.toString());
               console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
               
-            //   console.log(receivedMessage);
 
 
                  const updatedDevice = await Device.findOneAndUpdate(
