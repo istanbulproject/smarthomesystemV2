@@ -329,31 +329,77 @@ mqttClient.on('message', async (topic, message) => {
 
         try {
         
-            const receivedMessage = JSON.parse(message.toString());
-            console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
+            // const receivedMessage = JSON.parse(message.toString());
+            // console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
 
-            await Device.updateOne(
-                { deviceId: receivedMessage.deviceId, isDeleted: false },
-                {
-                    $set: {
-                    temperature: receivedMessage.temperature,
-                    humidity: receivedMessage.humidity,
-                    batteryPercentage: receivedMessage.batteryPercentage,
-                    lastSensorTime: new Date()
-                    },
-                    $push: {
-                    temperatureData: {
-                        $each: [
-                        {
+            // await Device.updateOne(
+            //     { deviceId: receivedMessage.deviceId, isDeleted: false },
+            //     {
+            //         $set: {
+            //         temperature: receivedMessage.temperature,
+            //         humidity: receivedMessage.humidity,
+            //         batteryPercentage: receivedMessage.batteryPercentage,
+            //         lastSensorTime: new Date()
+            //         },
+            //         $push: {
+            //         temperatureData: {
+            //             $each: [
+            //             {
+            //                 temperature: receivedMessage.temperature,
+            //                 timestamp: new Date()
+            //             }
+            //             ],
+            //             $slice: -10
+            //         }
+            //         }
+            //     }
+            //     );
+
+              const receivedMessage = JSON.parse(message.toString());
+              console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
+              
+            //   console.log(receivedMessage);
+
+
+                 const updatedDevice = await Device.findOneAndUpdate(
+                        { deviceId: receivedMessage.deviceId,isDeleted:false },
+                        receivedMessage,
+                        { new: true } // Güncellenmiş dökümanı döndür
+                      );
+                    
+                      console.log(updatedDevice);
+                    if (!updatedDevice) {
+                        return;
+                    }
+
+                    const now = new Date();
+                    const newSensorTimeStamp = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+
+                    // Yeni temperatureData kaydını oluştur
+                        const newTemperatureData = {
                             temperature: receivedMessage.temperature,
-                            timestamp: new Date()
+                            timestamp: newSensorTimeStamp // Şu anki zamanı kaydediyoruz
+                        };
+
+                        
+                        // Mevcut cihazı bul
+                        const device = await Device.findOne({ deviceId: receivedMessage.deviceId,isDeleted:false });
+                        
+                        device.sensorTimestamp = newSensorTimeStamp;
+                        
+                        if (!device.temperatureData) {
+                            device.temperatureData = []; // Yoksa yeni bir array olarak başlat
                         }
-                        ],
-                        $slice: -10
-                    }
-                    }
-                }
-                );
+                        
+                        device.temperatureData.push(newTemperatureData)
+
+                        // Kayıt sayısını kontrol et, 10'dan fazlaysa en eski kaydı sil
+                        if (device.temperatureData.length > 10) {
+                            device.temperatureData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Tarihe göre sıralama
+                            device.temperatureData = device.temperatureData.slice(1); // En eski kaydı çıkar
+                        }
+                        
+                        await device.save();
 
 
         } catch (error) {
