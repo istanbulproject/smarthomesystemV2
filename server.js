@@ -74,6 +74,11 @@ mqttClient.on('connect', () => {
             console.error('intdens online', err);
         }
     });
+      mqttClient.subscribe('intdens/+/temperature_sensor', (err) => {
+        if (err) {
+            console.error('intdens online', err);
+        }
+    });
 });
 
 // Veritabanı modelini import et
@@ -90,6 +95,7 @@ mqttClient.on('message', async (topic, message) => {
     const result = parts[1];  // "XXXXX"
     // const lastTpic = "intdens/"+result+"/cmd_response_db";
     // console.log("intdens/"+result+"/response");
+
 
     if ( parts[2] === "cmd_response") {
         
@@ -135,7 +141,7 @@ mqttClient.on('message', async (topic, message) => {
 
     }
 
-    if ( parts[2] === "manuel") {
+    if (parts[2] === "manuel") {
         
           const receivedMessage = JSON.parse(message.toString());
           const outputNumber = `output${receivedMessage.outputIndex}`;
@@ -297,7 +303,7 @@ mqttClient.on('message', async (topic, message) => {
         
     }
 
-     if (parts[2] === "gas_sensor") {
+    if (parts[2] === "gas_sensor") {
         
           try {
                     // 1. Veritabanı işlemi: Cihazı çalıştır.
@@ -319,6 +325,63 @@ mqttClient.on('message', async (topic, message) => {
             console.error('Error while saving device or publishing message:', error);
         }
     }
+    if (parts[2] === "temperature_sensor"){
+
+        try {
+
+              const receivedMessage = JSON.parse(message.toString());
+              console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
+              
+              console.log(receivedMessage);
+
+
+                 const updatedDevice = await Device.findOneAndUpdate(
+                        { deviceId: receivedMessage.deviceId,isDeleted:false },
+                        receivedMessage,
+                        { new: true } // Güncellenmiş dökümanı döndür
+                      );
+                    
+                    if (!updatedDevice) {
+                        return;
+                    }
+
+                    const now = new Date();
+                    const newSensorTimeStamp = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+
+                    // Yeni temperatureData kaydını oluştur
+                        const newTemperatureData = {
+                            temperature: receivedMessage.temperature,
+                            timestamp: newSensorTimeStamp // Şu anki zamanı kaydediyoruz
+                        };
+
+                        // Mevcut cihazı bul
+                         const device = await Device.findOne({ deviceId: receivedMessage.deviceId,isDeleted:false });
+
+                         device.sensorTimestamp = newSensorTimeStamp;
+
+                        if (!device.temperatureData) {
+                            device.temperatureData = []; // Yoksa yeni bir array olarak başlat
+                        }
+
+                        device.temperatureData.push(newTemperatureData)
+
+                        // Kayıt sayısını kontrol et, 10'dan fazlaysa en eski kaydı sil
+                        if (device.temperatureData.length > 10) {
+                            device.temperatureData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)); // Tarihe göre sıralama
+                            device.temperatureData = device.temperatureData.slice(1); // En eski kaydı çıkar
+                        }
+                        
+                        await device.save();
+
+
+        } catch (error) {
+            
+        }
+       
+         
+    }
+
+
 
     // if (topic== "intdens/sensor_online")
     // {
