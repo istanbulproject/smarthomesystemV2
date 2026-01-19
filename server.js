@@ -355,10 +355,19 @@ mqttClient.on('message', async (topic, message) => {
             //     }
             //     );
 
-              const receivedMessage = JSON.parse(message.toString());
-              console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
+              const now = new Date();
+            //   const newSensorTimeStamp = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+              const newSensorTimeStamp =  new Date(Date.now() + 3 * 60 * 60 * 1000);
+             
+            //   console.log(newSensorTimeStamp);
               
 
+              const receivedMessage = JSON.parse(message.toString());
+              receivedMessage.lastSensorTime=newSensorTimeStamp;
+              
+            //   console.log("------------- temperature_sensor TOPIC GİRDİ -------------");
+              
+             
 
                  const updatedDevice = await Device.findOneAndUpdate(
                         { deviceId: receivedMessage.deviceId,isDeleted:false },
@@ -371,8 +380,7 @@ mqttClient.on('message', async (topic, message) => {
                         return;
                     }
 
-                    const now = new Date();
-                    const newSensorTimeStamp = new Date(now.getTime() + (3 * 60 - now.getTimezoneOffset()) * 60000);
+                    
 
                     // Yeni temperatureData kaydını oluştur
                         const newTemperatureData = {
